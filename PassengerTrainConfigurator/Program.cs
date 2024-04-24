@@ -11,12 +11,17 @@ namespace PassengerTrainConfigurator
             const int CommandCreateTrain = 1;
             const int CommandExit = 2;
 
-            bool _isWork = true;
+            int minTickets = 150;
+            int maxTickets = 400;
 
-            Dispatcher dispatcher = new Dispatcher(150, 400);
+            bool isWork = true;
 
-            while (_isWork)
+            Dispatcher dispatcher = new Dispatcher(minTickets, maxTickets);
+
+            while (isWork)
             {
+                UpdateInfo(dispatcher);
+
                 Console.WriteLine($"Меню: {CommandCreateTrain} - cоздать поезд {CommandExit} - выход ");
 
                 Console.Write("\r\nВыберите команду:");
@@ -31,7 +36,7 @@ namespace PassengerTrainConfigurator
                             break;
 
                         case CommandExit:
-                            _isWork = false;
+                            isWork = false;
                             break;
 
                         default:
@@ -47,6 +52,22 @@ namespace PassengerTrainConfigurator
                 Console.ReadKey();
                 Console.Clear();
             }
+        }
+
+        private static void UpdateInfo(Dispatcher dispatcher)
+        {
+            int offset = 2;
+
+            Console.WriteLine($"Колличество текущих поездов: {dispatcher.Trains.Count}");
+
+            foreach (var train in dispatcher.Trains)
+            {
+                Console.WriteLine($"Поезд №{train.Value.NumberTrain} едет из {train.Key.StartPoint} в {train.Key.EndPoint}." +
+                    $" Колличество пассажиров {train.Value.NumberOfPassengers}." +
+                    $" Колличество вагонов в составе {train.Value.NumberVan}.");
+            }
+
+            Console.SetCursorPosition(0, dispatcher.Trains.Count + offset);
         }
     }
 
@@ -79,10 +100,12 @@ class Train
 
     public int NumberTrain { get; private set; }
     public int NumberVan { get; private set; }
+    public int NumberOfPassengers { get; private set; }
 
-    public void AddingVans(int numberOfpassengers)
+    public void AddingVans(int numberOfPassengers)
     {
-        NumberVan = (int)Math.Ceiling((decimal)numberOfpassengers /_vanСapacity);
+        NumberVan = (int)Math.Ceiling((decimal)numberOfPassengers / _vanСapacity);
+        NumberOfPassengers = numberOfPassengers;
     }
 
     private int GetNumberTrain()
@@ -119,6 +142,8 @@ class Dispatcher
         _maxNumberPassengers = maxNumberPassengers;
     }
 
+    public Dictionary<Direction, Train> Trains { get; set; } = new Dictionary<Direction, Train>();
+
     public void Work()
     {
         Direction direction = new Direction();
@@ -137,6 +162,7 @@ class Dispatcher
             $"вагонов и он направляеться из {direction.StartPoint} в {direction.EndPoint}.");
 
         _trains.Add(direction, train);
+        Trains = _trains;
     }
 }
 
