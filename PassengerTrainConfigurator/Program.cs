@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace PassengerTrainConfigurator
 {
@@ -20,7 +19,7 @@ namespace PassengerTrainConfigurator
 
             while (isWork)
             {
-                UpdateInfo(dispatcher);
+                dispatcher.UpdateInfo();
 
                 Console.WriteLine($"Меню: {CommandCreateTrain} - cоздать поезд {CommandExit} - выход ");
 
@@ -28,7 +27,6 @@ namespace PassengerTrainConfigurator
 
                 if (int.TryParse(Console.ReadLine(), out int inputUser))
                 {
-
                     switch (inputUser)
                     {
                         case CommandCreateTrain:
@@ -53,24 +51,7 @@ namespace PassengerTrainConfigurator
                 Console.Clear();
             }
         }
-
-        private static void UpdateInfo(Dispatcher dispatcher)
-        {
-            int offset = 2;
-
-            Console.WriteLine($"Колличество текущих поездов: {dispatcher.Trains.Count}");
-
-            foreach (var train in dispatcher.Trains)
-            {
-                Console.WriteLine($"Поезд №{train.Value.NumberTrain} едет из {train.Key.StartPoint} в {train.Key.EndPoint}." +
-                    $" Колличество пассажиров {train.Value.NumberOfPassengers}." +
-                    $" Колличество вагонов в составе {train.Value.NumberVan}.");
-            }
-
-            Console.SetCursorPosition(0, dispatcher.Trains.Count + offset);
-        }
     }
-
 }
 
 class Direction
@@ -78,11 +59,14 @@ class Direction
     public string StartPoint { get; private set; }
     public string EndPoint { get; private set; }
 
-    public void Create()
+    public Direction()
     {
         Console.Write("Укажите точку отправления: ");
+
         StartPoint = Console.ReadLine();
+
         Console.Write("Укажите точку прибытия: ");
+
         EndPoint = Console.ReadLine();
     }
 }
@@ -95,7 +79,7 @@ class Train
 
     public Train()
     {
-        NumberTrain = GetNumberTrain();
+        NumberTrain = NumberTrain = ++s_numberTrain;
     }
 
     public int NumberTrain { get; private set; }
@@ -106,12 +90,6 @@ class Train
     {
         NumberVan = (int)Math.Ceiling((decimal)numberOfPassengers / _vanСapacity);
         NumberOfPassengers = numberOfPassengers;
-    }
-
-    private int GetNumberTrain()
-    {
-        NumberTrain = ++s_numberTrain;
-        return NumberTrain;
     }
 }
 
@@ -142,13 +120,9 @@ class Dispatcher
         _maxNumberPassengers = maxNumberPassengers;
     }
 
-    public Dictionary<Direction, Train> Trains { get; set; } = new Dictionary<Direction, Train>();
-
     public void Work()
     {
         Direction direction = new Direction();
-
-        direction.Create();
 
         TicketOffice ticketOffice = new TicketOffice();
 
@@ -162,8 +136,21 @@ class Dispatcher
             $"вагонов и он направляеться из {direction.StartPoint} в {direction.EndPoint}.");
 
         _trains.Add(direction, train);
-        Trains = _trains;
+    }
+
+    public void UpdateInfo()
+    {
+        int offset = 2;
+
+        Console.WriteLine($"Колличество текущих поездов: {_trains.Count}");
+
+        foreach (var train in _trains)
+        {
+            Console.WriteLine($"Поезд №{train.Value.NumberTrain} едет из {train.Key.StartPoint} в {train.Key.EndPoint}." +
+            $" Колличество пассажиров {train.Value.NumberOfPassengers}." +
+            $" Колличество вагонов в составе {train.Value.NumberVan}.");
+        }
+
+        Console.SetCursorPosition(0, _trains.Count + offset);
     }
 }
-
-
